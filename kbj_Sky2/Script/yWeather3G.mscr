@@ -1,0 +1,21 @@
+vibrate(100)
+
+If( NOT InternetConnected( "http://pda.daum.net" ) )
+	IF( Question("인터넷에 접속되지 않았습니다.^NL^3G 접속으로 일기예보를 갱신하시겠습니까?^NL^연결시 과도한 통신요금이 발생할 수 있으니 주의하시기 바랍니다.","Attention","YesNo") )
+		suspend[1] = "GPRS_bye_if_device_off"
+		RegWriteDword( "HKLM", "Comm\ConnMgr\Planner\Settings", "CacheTime", "60")
+		RegWriteMultiString( "HKLM", "Comm\ConnMgr\Planner\Settings", "SuspendResume", suspend )
+		Connect("기본 인터넷 설정" )
+		CallScript( "\Program Files\HomeScreen PlusPlus\scramble\Script\yWeather.mscr" )
+		suspend[1] = "~GPRS!"
+		RegWriteDword( "HKLM", "Comm\ConnMgr\Planner\Settings", "CacheTime", "600")
+		RegWriteMultiString( "HKLM", "Comm\ConnMgr\Planner\Settings", "SuspendResume", suspend )
+		Exit
+	Else
+		Message( "일기예보 갱신을 중단합니다" )
+		Exit
+	EndIf
+EndIf
+
+Run( "\Program Files\HomeScreen PlusPlus\kbj_Sky2\Script\yWeather.mscr" )
+Exit

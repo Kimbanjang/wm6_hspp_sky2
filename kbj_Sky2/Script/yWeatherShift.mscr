@@ -1,0 +1,33 @@
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast1", "Condition", RegRead("HKCU", "Software\NotME\yWeather\Forecast2", "Condition" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "FeelsLike", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast1", "Temp High", RegRead("HKCU", "Software\NotME\yWeather\Forecast2", "Temp High" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast1", "Temp Low", RegRead("HKCU", "Software\NotME\yWeather\Forecast2", "Temp Low" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast1", "Icon", Replace(Replace(RegRead("HKCU", "Software\NotME\yWeather\Forecast2", "Icon" ), "yWS", "yWB" ), "s", "d" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Barometer", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Humidity", "N/A %")
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Visibility", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Dewpoint", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Wind", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Sun Rise", "N/A" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Current", "Sun Set", "N/A" )
+
+For i = 1 to 4
+	RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast" & i, "Condition", RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i+1, "Condition" ) )
+	RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast" & i, "Temp High", RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i+1, "Temp High" ) )
+	RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast" & i, "Temp Low", RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i+1, "Temp Low" ) )
+	RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast" & i, "Icon", RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i+1, "Icon" ) )
+Next
+
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast1", "Day of Week", "Today" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast3", "Day of Week", RegRead("HKCU", "Software\NotME\yWeather\Forecast4", "Day of Week" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast4", "Day of Week", RegRead("HKCU", "Software\NotME\yWeather\Forecast5", "Day of Week" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast5", "Day of Week", RegRead("HKCU", "Software\NotME\yWeather\Forecast6", "Day of Week" ) )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast6", "Day of Week", "" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast6", "Condition", "" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast6", "Temp High", "-" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast6", "Temp Low", "-" )
+RegWriteString( "HKCU", "Software\NotME\yWeather\Forecast6", "Icon", "yWS44s.png" )
+
+#RegWriteString( "HKCU", "Software\A_C\S2U2", "UserWeather", "C|" & Replace( Replace( RegRead("HKCU", "Software\NotME\yWeather\Forecast1", "Icon" ), "yWS", "" ), "s", "" ) & "|" & RegRead("HKCU", "Software\NotME\yWeather\Forecast1", "Condition" ) )
+
+Exit

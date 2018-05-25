@@ -1,0 +1,121 @@
+For i = 0 to 5
+    If ( i = 0 )
+       Condition[i] = RegRead("HKCU", "Software\NotME\yWeather\Current", "Condition")
+    Else
+       Condition[i] = RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i, "Condition")
+     Day_of_Week[i] = RegRead("HKCU", "Software\NotME\yWeather\Forecast" & i, "Day_of_Week")
+    EndIf
+
+    Condition[i] = Replace ( Condition[i], "Widespread Dust", "È²»çÇö»ó" )
+    Condition[i] = Replace ( Condition[i], "Smoke", "½º¸ð±×" )
+    Condition[i] = Replace ( Condition[i], "Fog", "¾È°³" )
+    Condition[i] = Replace ( Condition[i], "Misty", "Â£Àº ¾È°³" )
+    Condition[i] = Replace ( Condition[i], "Mist", "¿¶Àº ¾È°³" )
+    Condition[i] = Replace ( Condition[i], "Haze", "¾ÆÁö¶ûÀÌ" )
+
+    Condition[i] = Replace ( Condition[i], "Overcast", "Èå¸²" )
+    Condition[i] = Replace ( Condition[i], "Cloudy", "Èå¸²" )
+    Condition[i] = Replace ( Condition[i], "Clouds", "Èå¸²" )
+    Condition[i] = Replace ( Condition[i], "Cloud", "Èå¸²" )
+
+    Condition[i] = Replace ( Condition[i], "Clearing Late", "Á¡Â÷ ¸¼¾ÆÁü" )
+    Condition[i] = Replace ( Condition[i], "Clear", "ÄèÃ»" )
+    Condition[i] = Replace ( Condition[i], "Fair", "¸¼À½" )
+    Condition[i] = Replace ( Condition[i], "Sunny", "È­Ã¢" )
+    Condition[i] = Replace ( Condition[i], "Sun", "¸¼À½" )
+
+    Condition[i] = Replace ( Condition[i], "Hail", "¿ì¹Ú" )
+    Condition[i] = Replace ( Condition[i], "Few Snow Showers", "¸Å¿ì ÀûÀº ´«" )
+    Condition[i] = Replace ( Condition[i], "Snow/Rain Icy Mix", "Áø´«±úºñ(½Ò½ÒÇÔ)" )
+    Condition[i] = Replace ( Condition[i], "Snow/Rain Mix", "Áø´«±úºñ" )
+    Condition[i] = Replace ( Condition[i], "Snowflakes", "´«¼ÛÀÌ" )
+    Condition[i] = Replace ( Condition[i], "Blizzard", "°­Ç³À» µ¿¹ÝÇÑ Æø¼³" )
+    Condition[i] = Replace ( Condition[i], "Heavy Snow", "¸¹Àº ´«" )
+    Condition[i] = Replace ( Condition[i], "Snow Storms", "´«ÆøÇ³" )
+    Condition[i] = Replace ( Condition[i], "Snow Showers", "´«º¸¶ó" )
+    Condition[i] = Replace ( Condition[i], "Snow Shower", "´«º¸¶ó" )
+    Condition[i] = Replace ( Condition[i], "Snowy", "´«" )
+    Condition[i] = Replace ( Condition[i], "Snow", "´«" )
+
+    Condition[i] = Replace ( Condition[i], "Windy Rain", "ºñ(°­Ç³)" )
+    Condition[i] = Replace ( Condition[i], "Typhoon", "ÅÂÇ³" )
+    Condition[i] = Replace ( Condition[i], "Tornado", "Åä³×ÀÌµµ" )
+    Condition[i] = Replace ( Condition[i], "Squalls", "µ¹Ç³" )
+    Condition[i] = Replace ( Condition[i], "Windy", "°­Ç³" )
+    Condition[i] = Replace ( Condition[i], "Wind", "¹Ù¶÷" )
+
+    Condition[i] = Replace ( Condition[i], "Thunderstorms", "³ú¿ì" )
+    Condition[i] = Replace ( Condition[i], "Thunderstorm", "³ú¿ì" )
+    Condition[i] = Replace ( Condition[i], "T-Storms", "³ú¿ì" )
+    Condition[i] = Replace ( Condition[i], "T-Storm", "³ú¿ì" )
+    Condition[i] = Replace ( Condition[i], "T-storms", "³ú¿ì" )
+    Condition[i] = Replace ( Condition[i], "T-storm", "³ú¿ì" )
+
+    Condition[i] = Replace ( Condition[i], "T-Showers", "¼Ò³ª±â(ÃµµÕ/¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "T-Shower", "¼Ò³ª±â(ÃµµÕ/¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "T-showers", "¼Ò³ª±â(ÃµµÕ/¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "T-shower", "¼Ò³ª±â(ÃµµÕ/¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "Thundershowers", "¼Ò³ª±â(ÃµµÕ/¹ø°³)" )
+
+    Condition[i] = Replace ( Condition[i], "with Thunder", "(ÃµµÕ/¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "Thunder", "ÃµµÕ(¹ø°³)" )
+    Condition[i] = Replace ( Condition[i], "Lightning", "¹ø°³" )
+
+    Condition[i] = Replace ( Condition[i], "Drizzle", "ÀÌ½½ºñ" )
+    Condition[i] = Replace ( Condition[i], "Rainstorm", "ÆøÇ³¿ì" )
+    Condition[i] = Replace ( Condition[i], "Rain Shower", "¼Ò³ª±â" )
+    Condition[i] = Replace ( Condition[i], "Showers", "¼Ò³ª±â" )
+    Condition[i] = Replace ( Condition[i], "Rainy", "ºñ" )
+    Condition[i] = Replace ( Condition[i], "Rain", "ºñ" )
+
+    Condition[i] = Replace ( Condition[i], "Freezing", "Â÷°¡¿î" )
+    Condition[i] = Replace ( Condition[i], "Frigid", "¸Å¿ì ½Ò½ÒÇÔ" )
+    Condition[i] = Replace ( Condition[i], "Icy", "(½Ò½ÒÇÔ)" )
+    Condition[i] = Replace ( Condition[i], "Hot", "´õ¿ò" )
+
+    Condition[i] = Replace ( Condition[i], "and", "/" )
+    Condition[i] = Replace ( Condition[i], "N/A", "N/A" )
+
+    Condition[i] = Replace ( Condition[i], "Day", "³·" )
+    Condition[i] = Replace ( Condition[i], "Night", "¹ã" )
+
+    Condition[i] = Replace ( Condition[i], "AM", "¿ÀÀü" )
+    Condition[i] = Replace ( Condition[i], "PM", "¿ÀÈÄ" )
+
+    Condition[i] = Replace ( Condition[i], "Early", "(ÀÌ¸¥½Ã°¢)" )
+    Condition[i] = Replace ( Condition[i], "Late", "(´ÊÀº½Ã°¢)" )
+
+    Condition[i] = Replace ( Condition[i], "Few", "¸Å¿ì ÀûÀº" )
+    Condition[i] = Replace ( Condition[i], "Light", "ÀûÀº" )
+    Condition[i] = Replace ( Condition[i], "Heavy", "°­ÇÑ" )
+
+    Condition[i] = Replace ( Condition[i], "Partly", "ÀÏºÎ" )
+    Condition[i] = Replace ( Condition[i], "Mostly", "´ëºÎºÐ" )
+
+    Condition[i] = Replace ( Condition[i], "in the vicinity", "<ÀÏºÎÁö¿ª>" )
+    Condition[i] = Replace ( Condition[i], "Isolated", "ÀÏºÎÁö¿ª" )
+    Condition[i] = Replace ( Condition[i], "Scattered", "´ëºÎºÐÁö¿ª" )
+
+    Condition[i] = Replace ( Condition[i], "steady", "(±â¾Ð¾ÈÁ¤)" )
+    Condition[i] = Replace ( Condition[i], "falling", "(Àú±â¾Ð)" )
+    Condition[i] = Replace ( Condition[i], "rising", "(°í±â¾Ð)" )
+
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Today",   "¿À´Ã" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Tonight", "¿À´Ã¹ã" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Tomorrow", "³»ÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Sun", "ÀÏ¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Mon", "¿ù¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Tue", "È­¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Wed", "¼ö¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Thu", "¸ñ¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Fri", "±Ý¿äÀÏ" )
+    Day_of_Week[i] = Replace ( Day_of_Week[i], "Sat", "Åä¿äÀÏ" )
+
+    If ( i = 0 )
+       RegWriteString("HKCU", "Software\NotME\yWeather\Current", "Condition", Condition[i])
+    Else
+       RegWriteString("HKCU", "Software\NotME\yWeather\Forecast" & i, "Condition", Condition[i])
+       RegWriteString("HKCU", "Software\NotME\yWeather\Forecast" & i, "Day_of_Week", Day_of_Week[i])
+    EndIf
+Next
+Exit

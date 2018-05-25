@@ -1,0 +1,101 @@
+Script = SystemPath("ScriptPath") \ SystemPath("ScriptName") & SystemPath("ScriptExt")
+RemoveNotifications(Script)
+
+
+For i = 1 to 9 
+    DDayName[i] = RegRead("HKCU", "Software\Mort_D-Day", i & "-DDayName")
+        DDay[i] = RegRead("HKCU", "Software\Mort_D-Day", i & "-DDay")
+Next
+
+
+SetChoiceEntryFormat( 18, 12 )
+
+i = Choice("D-Day", "변경할 D-Day를 선택해 주세요.", 0, 0, \
+  "1. "  & DDayName[1], \
+  "    " &     DDay[1], \
+  "2. "  & DDayName[2], \
+  "    " &     DDay[2], \
+  "3. "  & DDayName[3], \
+  "    " &     DDay[3], \
+  "4. "  & DDayName[4], \
+  "    " &     DDay[4], \
+  "5. "  & DDayName[5], \
+  "    " &     DDay[5], \
+  "6. "  & DDayName[6], \
+  "    " &     DDay[6], \
+  "7. "  & DDayName[7], \
+  "    " &     DDay[7], \
+  "8. "  & DDayName[8], \
+  "    " &     DDay[8], \
+  "9. "  & DDayName[9], \
+  "    " &     DDay[9]  )
+
+
+If ( i = 0 )
+   Exit
+Else
+   i = Format( i, 1 )
+   i = Round(i/2)
+
+   DDayName = Input("D-Day 이름을 적어주세요.", "D-Day")
+   If ( DDayName eq "" )
+      Exit
+   Else
+      GetTime(hour,min,sec,day,month,year)
+
+      DayInput = Input("날짜를 적어주세요.(오늘 : " & year & month & day & ")", "D-Day")
+      DayInput = Replace(DayInput, ".", "")
+      DayInput = Replace(DayInput, "-", "")
+      DayInput = Replace(DayInput, " ", "")
+      DayInput = Replace(DayInput, "/", "")
+
+      If ( Length(DayInput) = 8 )
+         DDY = SubStr( DayInput, 1, 4 )
+         DDM = SubStr( DayInput, 5, 2 )
+         DDD = SubStr( DayInput, 7, 2 )
+
+         RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DayInput", DDY &"."& DDM &"."& DDD)
+
+         MTS = MakeTimeStamp( DDY, DDM, DDD )
+         If ( MTS > TimeStamp() )
+            DDT = MTS - TimeStamp()
+            DDay = Floor( DDT/(24*60*60) ) + 1
+            PlusMinus = "-"
+
+            RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDay", "D " & PlusMinus &" "& DDay & "일전")
+            DayType = 0
+         Else
+            DDT = TimeStamp() - MTS
+            DDay = Floor( DDT/(24*60*60) )
+            PlusMinus = "+"
+
+            DayType = Question( "기념일 입니까?                        " \
+                              & "*   예  :  당일 포함, ○일째          " \
+                              & "*아니오: 당일 제외, ○일경과" )
+
+            If ( DDay = 0 )
+               RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDay", "D " & PlusMinus &" "& DDay & "일(오늘)")
+            Else
+               DDT = TimeStamp() - MTS
+               DDay = Floor( DDT/(24*60*60) ) + DayType
+               PlusMinus = "+"
+
+               If ( DayType = 1 )
+                  RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDay", "D " & PlusMinus &" "& DDay & "일째")
+               Else
+                  RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDay", "D " & PlusMinus &" "& DDay & "일경과")
+               EndIf
+            EndIf
+         EndIf
+
+         RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DayType", DayType)
+         RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDayName", DDayName)
+      EndIf
+   EndIf
+
+   RunAt(TimeStamp()+1, Script)
+EndIf
+Exit
+
+
+

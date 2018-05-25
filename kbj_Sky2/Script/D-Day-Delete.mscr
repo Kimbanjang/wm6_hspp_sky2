@@ -1,0 +1,47 @@
+Script = SystemPath("ScriptPath") \ SystemPath("ScriptName") & SystemPath("ScriptExt")
+RemoveNotifications(Script)
+
+
+For i = 1 to 9 
+    DDayName[i] = RegRead("HKCU", "Software\Mort_D-Day", i & "-DDayName")
+        DDay[i] = RegRead("HKCU", "Software\Mort_D-Day", i & "-DDay")
+Next
+
+
+SetChoiceEntryFormat( 18, 12 )
+
+i = Choice("D-Day", "삭제할 D-Day를 선택해 주세요.", 0, 0, \
+  "1. "  & DDayName[1], \
+  "    " &     DDay[1], \
+  "2. "  & DDayName[2], \
+  "    " &     DDay[2], \
+  "3. "  & DDayName[3], \
+  "    " &     DDay[3], \
+  "4. "  & DDayName[4], \
+  "    " &     DDay[4], \
+  "5. "  & DDayName[5], \
+  "    " &     DDay[5], \
+  "6. "  & DDayName[6], \
+  "    " &     DDay[6], \
+  "7. "  & DDayName[7], \
+  "    " &     DDay[7], \
+  "8. "  & DDayName[8], \
+  "    " &     DDay[8], \
+  "9. "  & DDayName[9], \
+  "    " &     DDay[9]  )
+
+
+If ( i = 0 )
+   Exit
+Else
+   i = Format( i, 1 )
+   i = Round(i/2)
+
+   RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDayName", "")
+   RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DayInput", "")
+   RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DayType" , "")
+   RegWriteString("HKCU", "Software\Mort_D-Day", i & "-DDay"    , "")
+
+   RunAt(TimeStamp()+1, Script)
+EndIf
+Exit

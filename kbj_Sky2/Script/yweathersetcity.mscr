@@ -1,0 +1,70 @@
+vibrate(100)
+
+   cName = Array( "강릉(강원도)"    , "광주"          , "군산(전라북도)", "김천시(경상북도)", "대경도(전라남도)", \
+                  "대구(신암동)"    , "대구(월촌)"    , "대구(하빈면)"  , "대전"            , "동해(강원도)"    , \
+                  "모도(경상남도)"  , "목포(전라남도)", "밀양(경상남도)", "부산"            , "서산(충청남도)"  , \
+                  "서울"            , "설악산(강원도)", "성남(경기도)"  , "신지도(전라남도)", "속초(강원도)"    , \
+                  "수원(경기도)"    , "안동(경상북도)", "안양(경기도)"  , "양양(강원도)"    , "오산(경기도)"    , \
+                  "울릉도(경상북도)", "울산"          , "원주(강원도)"  , "익산(전라북도)"  , "인천"            , \
+                  "전주(전라북도)"  , "제주도"        , "제주도(비양도)", "제주도(서귀포)"  , "제주도(추자면)"  , \
+                  "지주도(전라남도)", "진주(경상남도)", "창원(경상남도)", "천안(충청남도)"  , "충주(충청북도)"  , \
+                  "포항(경상북도)"  , "화도(경상남도)" ,"안산" )
+
+   cCode = Array( "kangwon-do/gangneung-si-1132475"                  , "gwangju/%EC%8B%A0%ED%9D%A5%EB%8F%99-28995198"         , \
+                  "jeollabuk-do/gunsan-si-1132480"                   , "gyeongsangbuk-do/gimcheon-si-1122356"                 , \
+                  "jeollanam-do/taegyong-do-12495760"                , "daegu/신암동-28835232"                                , \
+                  "daegu/wolch'on-22336677"                          , "daegu/habin-myeon-28835005"                           , \
+                  "daejon/taejon-airport-12514233"                   , "kangwon-do/donghae-si-1132575"                        , \
+                  "gyeongsangnam-do/mo-do-12508663"                  , "jeollanam-do/mokpo-airport-12514211"                  , \
+                   "gyeongsangnam-do/miryang-si-1132524"             , "busan/%EA%B4%91%EB%B3%B5%EB%8F%99-28995080"           , \
+                  "chungcheongnam-do/seosan-si-1132563"              , "seoul/seoul-1132599"                                  , \
+                  "kangwon-do/solak-airport-12514222"                , "kyeongki-do/%EB%8B%A8%EB%8C%80%EB%8F%99-28806706"     , \
+                  "jeollanam-do/sinji-do-12495623"                   , "kangwon-do/sokcho-si-1132556"                         , \
+                  "kyeongki-do/suwon-airport-12514230"               , "gyeongsangbuk-do/andong-si-1132441"                   , \
+                  "kyeongki-do/anyang-si-1132443"                    , "kangwon-do/yang-yang-international-airport-28808959"  , \
+                  "kyeongki-do/osan-air-base-12514214"               , "gyeongsangbuk-do/dagelet-island-12495862"             , \
+                  "ulsan/%EC%98%A5%EA%B5%90%EB%8F%99-28995259"       , "kangwon-do/wonju-si-1132584"                          , \
+                  "jeollabuk-do/iksan-si-1121683"                    , "incheon/%EB%8F%99%EC%9D%B8%EC%B2%9C%EB%8F%99-28995149", \
+                  "jeollabuk-do/%EB%85%B8%EC%86%A1%EB%8F%99-28807727", "/quelpart-island-12495133"                            , \
+                  "jaeju-do/piyang-do-12508641"                      , "jaeju-do/seogwipo-si-1128226"                         , \
+                  "jaeju-do/chu-ja-heliport-12523361"                , "jeollanam-do/chiju-do-12495142"                       , \
+                  "gyeongsangnam-do/jinju-si-1132459"                , "gyeongsangnam-do/changwon-si-1132449"                 , \
+                  "chungcheongnam-do/cheonan-si-1132455"             , "chungcheongbuk-do/chungju-si-1132464"                 , \
+                  "gyeongsangbuk-do/pohang-airport-12514216"         , "gyeongsangnam-do/hwa-do-12508659" 		,\
+		  "kyeongki-do/ansan-si-1132444" )
+
+      i = choice( "지역선택", "지역을 선택하세요.", 0, 0, cName )
+
+      cityName = cName[ i ]
+      cityCode = "http://weather.yahoo.com/south-korea/" & cCode[ i ] & "/?unit=c"
+
+If( cityName eq "" )
+	Message( "취소하셨습니다." )
+	Exit
+EndIf
+
+If( NOT InternetConnected( "http://pda.daum.net" ) )
+	IF( Question("인터넷에 접속되지 않았습니다.^NL^3G 접속으로 일기예보를 갱신하시겠습니까?^NL^연결시 과도한 통신요금이 발생할 수 있으니 주의하시기 바랍니다.","Attention","YesNo") )
+		suspend[1] = "GPRS_bye_if_device_off"
+		RegWriteDword( "HKLM", "Comm\ConnMgr\Planner\Settings", "CacheTime", "60")
+		RegWriteMultiString( "HKLM", "Comm\ConnMgr\Planner\Settings", "SuspendResume", suspend )
+		Connect("기본 인터넷 설정" )
+		RegWriteString( "HKCU", "Software\NotME\yWeather", "Location", cityName)
+		RegWriteString( "HKCU", "Software\NotME\yWeather", "City Code", cityCode)
+		CallScript( SystemPath("ScriptPath") \ "yWeather.mscr" )
+		suspend[1] = "~GPRS!"
+		RegWriteDword( "HKLM", "Comm\ConnMgr\Planner\Settings", "CacheTime", "600")
+		RegWriteMultiString( "HKLM", "Comm\ConnMgr\Planner\Settings", "SuspendResume", suspend )
+		Exit
+	Else
+		Message( "일기예보 갱신을 중단합니다" )
+		Exit
+	EndIf
+EndIf
+
+RegWriteString( "HKCU", "Software\NotME\yWeather", "Location", cityName)
+RegWriteString( "HKCU", "Software\NotME\yWeather", "City Code", cityCode)
+
+Run( SystemPath("ScriptPath") \ "yWeather.mscr" )
+
+Exit

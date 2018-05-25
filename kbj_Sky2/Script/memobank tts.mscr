@@ -1,0 +1,715 @@
+# 암기은행 TTS ver 2.06
+# 2009. 4. 15  by 곤이 : 기본 코드 활용
+# 2009. 9.  5  by 깜장토끼(HannaC) : 코드 참고
+# 2010. 1.  9  by 지인(知人)   장치, 조명 끄기설정 - 토글 (히로님 스크립트 적용)
+#    ver 2.03                  암기은행에서의 깜빡이 기능 추가 (자동 및 수동모드 선택)
+#                              반복 재생 횟수 자유롭게 변경
+#                              문장에서 단어 선택시 음성 재생(단점 : 해당 카드 첫 음성이 선택 단어 재생후 반복됨)
+#                              암기은행 TTS 설정 화면 구성 (사용자 환경에 맞게 조정이 용이하도록 )
+#    ver 2.04                  종료시 화면 원래 상태로 전환
+#                              중단 후 다시 진행시 가로,세로모드 설정대로 변경
+#                              암기상태 아이콘 출력시 깜빡이 안되는 버그로 깜빡이 + 학습모드시 암기상태 아이콘 출력 비활성화
+#    ver 2.05                  해상도에 따른 설정창 자동 출력
+#                              암기모드시 저장시간 최소화를 위해 '맞음'->'틀림'으로 변경
+#                              암기모드에서 Item0(단어 표시)는 여러줄 깜빡이 모드 가능(문장 사용 가능)
+#                              암기은행 실행전에 입력기 자동 숨기기
+#                              커서 없애는 기능 강화
+#                              카드 자동 진행시 시간 최적화(줄임)
+#                              카드진행 수동 + 암기모드에서도 문제->정답 이동은 자동으로 추가
+#    ver 2.06                  가로모드(90도) 추가 - 2010.01.16
+#                              해상도에 따른 변수 설정 및 해상도에 따른 연동 설정 - 2010.01.19
+#                              "▣ 암기은행 , MDict 단독 실행 "으로 변경 : 문장 학습시 용이
+#                              암기은행, MDict3.0 실행 파일 위치 입력 방식에서 선택창 방식으로 변경
+#                              
+
+#MDict ver 3.0 Final
+#SendCommand("MDict",32883)  가 클립보드 문자열 백그라운드 검색
+#SendCommand("MDict",1037)   가 소리 다시재생
+
+# 암기은행 TTS 초기값 설정(최초 설치시)
+MBtts_Exists = RegKeyExists("HKLM", "Software\MemoBank TTS")
+
+IF (MBtts_Exists = 0)
+   # 레지스트리 암기은행 TTS  디폴트 설정(T옴니아 기준)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_width", ScreenWidth())
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_high", ScreenHeight())
+    RegWriteString("HKLM", "Software\MemoBank TTS", "MemoBank_Dir", "\")
+    RegWriteString("HKLM", "Software\MemoBank TTS", "MDict_Dir", "\")
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "TTS_Repeat", 1)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Blinker_Mode", 1)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Card_Auto", 1)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "MBMode_Select", 1)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Item0_Yaxis", 150)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Item1_Yaxis", 250)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Item1_Show", 1000)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Repeat_Speed", 800)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Repeat_Rest", 500)
+    RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_Rotate", 0)
+    Message( "암기은행 TTS 초기 설정을 하였습니다.", "암기은행 TTS 초기설정" )
+ENDIF
+
+
+# 레지스트리 암기은행 TTS 설정값 가져오기
+Phone_width = RegRead("HKLM", "Software\MemoBank TTS", "Phone_width")
+Phone_high = RegRead("HKLM", "Software\MemoBank TTS", "Phone_high")
+MemoBank_DFile = RegRead("HKLM", "Software\MemoBank TTS", "MemoBank_Dir")
+MDict_DFile = RegRead("HKLM", "Software\MemoBank TTS", "MDict_Dir")
+TTS_Repeat = RegRead("HKLM", "Software\MemoBank TTS", "TTS_Repeat")
+Blinker_Mode = RegRead("HKLM", "Software\MemoBank TTS", "Blinker_Mode")
+Card_Auto = RegRead("HKLM", "Software\MemoBank TTS", "Card_Auto")
+MBMode_Select = RegRead("HKLM", "Software\MemoBank TTS", "MBMode_Select")
+Item0_Yaxis = RegRead("HKLM", "Software\MemoBank TTS", "Item0_Yaxis")
+Item1_Yaxis = RegRead("HKLM", "Software\MemoBank TTS", "Item1_Yaxis")
+Item1_Show = RegRead("HKLM", "Software\MemoBank TTS", "Item1_Show")
+Repeat_Speed = RegRead("HKLM", "Software\MemoBank TTS", "Repeat_Speed")
+Repeat_Rest = RegRead("HKLM", "Software\MemoBank TTS", "Repeat_Rest")
+Phone_Rotate = RegRead("HKLM", "Software\MemoBank TTS", "Phone_Rotate")
+
+
+#Question의 Yes: 1 , No: 0 , Cancel: 2
+modeIn = Question("암기은행 TTS ver 2.06를 실행 하시겠습니까? ^NL^ ^NL^아니오 : 암기은행 TTS 설정", "암기은행 TTS",  "YesNoCancel" )
+
+If (modeIn = 2)
+   Exit
+EndIF
+
+
+# 암기은행	TTS	설정 화면	구성
+#TTS	설정 화면	타이틀 (설정값 부분은	레지스터에 가져와서	표시)
+#레지	위치 ("HKLM",	"Software",	"MemoBank	TTS")
+# 1. Phone_width, Phone_high            : 숫자 입력         기본값: 480, 800
+# 2. MemoBank_DFile                     : Dialog 선택       기본값: \
+# 3. MDict_DFile                        : Dialog 선택       기본값: \
+# 4. TTS_Repeat                         : 숫자 입력         기본값: 1
+# 5. Blinker_Mode                       :1(예), 0 (아니오)  기본값: 1
+# 6. Card_Auto                          :1(예), 0 (아니오)  기본값: 1
+# 7. MBMode_Select                      :1(학습), 0 (암기)  기본값: 1
+# 8. Item0_Yaxis                        : 숫자 입력         기본값: 150
+# 9. Item1_Yaxis                        : 숫자 입력         기본값: 250
+#10. Item1_Show                         : 숫자 입력ms       기본값: 1000
+#11. Repeat_Speed                       : 숫자 입력ms       기본값: 800
+#12. Repeat_Rest                        : 숫자 입력ms       기본값: 500
+#13. Phone_Rotate                       : 세로(0), 가로(1,2)  기본값:0
+
+# Question에서 암기은행 TTS 설정 선택시 이하 실행 ###################################
+
+# 해상도가 480 X 800 이상인 경우에 실행
+IF ((ScreenWidth() + ScreenHeight()) > 1250)
+  SetChoiceEntryFormat(18,11)
+  SetMessageFont( 11 )
+ENDIF
+
+If (modeIn = 0)
+  Setting_Exit = 0
+  While (Setting_Exit = 0)
+    # 작은값 큰값으로 입력할것, 잘못입력시 가로,세로모드에 문제가 있을 수 있음
+    Title[1]  = " 1. 폰 해상도     :     " & Phone_width & " x " & Phone_high
+    Title[2]  = " 2. 암기은행 실행 파일 : " 
+    Title[3]  = "   " & MemoBank_DFile
+    Title[4]  = " 3. MDict3.0 실행 파일 : " 
+    Title[5]  = "   " & MDict_DFile
+    
+    # 음성 반복 횟수 기본값은 1회
+    Title[6]  = " 4. 음성 반복 횟수                : " & TTS_Repeat & "회"
+
+    IF (Blinker_Mode = 1)
+        Title[7]  = " 5. 깜빡이 모드                    : 예"
+    Else
+        Title[7]  = " 5. 깜빡이 모드                    : 아니오"
+    ENDIF
+
+    # 암기은행 카드 자동 진행시 전화가 수신되면 자동 종료 되며 자동진행 중단 방법은 반복 횟수가 끝난 후 or 단어가 바뀐 후에 종료키 또는 프로그램 상단 우측 'x' 를 선택한다.
+    IF (Card_Auto =1)
+        Title[8]  = " 6. 암기은행 자동 진행           : 예"
+    ELSE
+        Title[8]  = " 6. 암기은행 자동 진행           : 아니오"
+    ENDIF
+    
+    # 카드진행 자동시 암기모드와 학습모드 중 택1(반드시 암기은행에서 동일한 모드가 선택되어 있어야 합니다.
+    IF (MBMode_Select=1)
+        Title[9]  = "  └ 모드 선택 : [학습모드], 암기모드"  
+    ELSE
+        Title[9]  = "  └ 모드 선택 : 학습모드, [암기모드]"  
+    ENDIF
+
+    #MouseClick("암기은행", 10, 200) 의 경우는 상단바 부분 50정도를 빼고 적용하여야 한다. 입력받는 값은 전체 화면 기준
+    Title[10]  = " 7. Item0(문제)의 Y축 위치     : " & Item0_Yaxis
+    # 위와 동일
+    Title[11]  = " 8. Item1(정답)의 Y축 위치     : " & Item1_Yaxis
+
+    # 깜빡이 & 학습모드시 정답 나오고 볼수 있는 시간[정답이 긴경우나 짧은 경우에 대비]
+    Title[12] = " 9. Item1(정답) 표시 시간       : " & Item1_Show & "ms" 
+
+    # (숫자가 크면 늦게 반복됨 단위:ms) 기본: 400ms
+    Title[13] = "10. 반복듣기 속도                  : " & Repeat_Speed & "ms "  
+
+    # 숫자가 작으면 cpu점유율 올라감 (1초 = 1000), 최소 200ms이상 추천. 단위:ms
+    Title[14] = "11. n회 반복 후 대기시간         : " & Repeat_Rest & "ms " 
+
+    # 화면 가로, 세로모드
+    IF (Phone_Rotate=0)
+        Title[15]  = "12. 화면  :  가로모드 ,  [[세로모드]]"  
+    ElseIF (Phone_Rotate=1)
+        Title[15]  = "12. 화면  :  [[가로-시계]] , 세로모드"  
+    ELSE
+        Title[15]  = "12. 화면  :  [가로-반시계] , 세로모드"  
+    ENDIF
+
+    # 암기은행만 실행
+    Title[16] = "▣ 암기은행 , MDict 단독 실행 "
+
+
+    # 암기은행 TTS 실행
+    Title[17] = "▣ 암기은행 TTS ver2.06 실행 "
+    
+    
+
+    # 선택 박스 ###########################################################################################
+    ChoiceDefault( "TTS Setting","암기은행 TTS ver 2.06 [by 지인(知人)]^NL^설정 : 변경할 항목을 선택하세요.", 0, 0,Title[1],Title[2],Title[3],Title[4],Title[5],Title[6],Title[7],Title[8],Title[9],Title[10],Title[11],Title[12],Title[13],Title[14],Title[15],Title[16],Title[17])
+	    Case(0)
+			    Exit
+	
+  	  Case( 1)
+       Input_i = Input("폰 해상도의 가로값(작은값)를 입력하세요.^NL^ (현재값 : " & Phone_width & ")", "폰 해상도 가로")
+       Input_j = Input("폰 해상도의 세로값(큰값)를 입력하세요.^NL^ (현재값 : " & Phone_high & ")", "폰 해상도 세로")
+       IF ( (Input_i * Input_j) > 0)
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_width", Input_i)
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_high", Input_j)
+           Phone_width = Input_i
+	         Phone_high = Input_j
+	     ENDIF
+	     
+  	  Case( 2,3 )
+  	  # 암기은행 위치
+  	   Input_i = SelectFile( "암기은행 위치", FALSE, "*.exe", "암기은행 실행파일을 선택 하세요.",MemoBank_DFile)
+  	   IF (Input_i ne "")
+           RegWriteString("HKLM", "Software\MemoBank TTS", "MemoBank_Dir", Input_i)
+           MemoBank_DFile = Input_i
+       ENDIF
+       
+  	  Case( 4,5 )
+  	  # MDict3.0 위치
+  	   Input_i = SelectFile( "MDict3.0 위치", FALSE, "*.exe", "MDict3.0 실행파일을 선택 하세요.", MDict_DFile)
+  	   IF (Input_i ne "")
+           RegWriteString("HKLM", "Software\MemoBank TTS", "MDict_Dir", Input_i)
+           MDict_DFile = Input_i
+       ENDIF
+       
+  	  Case( 6 )
+  	  # 음성 반복 횟수 기본값은 1회
+  	   Input_i = Input("암기은행 TTS 반복 재생 횟수를 입력하세요.^NL^ 현재 설정값 : " & TTS_Repeat & "회", "반복 재생 횟수")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "TTS_Repeat", Input_i)
+           TTS_Repeat = Input_i
+       ENDIF
+       
+  	  Case( 7 )
+  	  # 깜빡이 모드 On/Off
+  	   Input_i = Input("깜빡이 모드를 선택하시겠습니까?^NL^ 현재 설정값 : " & Blinker_Mode & "^NL^ 1 : 예(깜빡이 모드)^NL^ 0 : 아니오", "깜빡이 모드")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Blinker_Mode", Input_i)
+           Blinker_Mode = Input_i
+       ENDIF
+
+  	  Case( 8 )
+  	  # 암기은행 카드 자동 진행 
+  	  # 암기은행 카드 자동 진행시 전화가 수신되면 자동 종료 되며 
+  	  # 자동진행 중단 방법은 반복 횟수가 끝난 후 or 단어가 바뀐 후에 종료키 또는 프로그램 상단 우측 'x' 를 선택한다.
+  	   Input_i = Input("암기은행 카드 자동 진행를 하시겠습니까?^NL^ 현재 설정값 : " & Card_Auto & "^NL^ 1 : 예(암기은행 카드 자동 진행)^NL^ 0 : 아니오^NL^자동 진행 중단 방법은 ^NL^단어가 바뀐후 종료버튼 ^NL^또는 프로그램 상단 우측 'x' 를 선택.", "카드 자동 진행")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Card_Auto", Input_i)
+           Card_Auto = Input_i
+       ENDIF
+       
+  	  Case( 9 )
+  	  # 카드진행 자동시 학습모드와 암기모드 중 택1(반드시 암기은행에서 동일한 모드가 선택되어 있어야 합니다.
+  	  # :1(학습), 0 (암기)
+  	   Input_i = Input("자동 진행시 모드를 선택하시요.^NL^ 현재 설정값 : " & MBMode_Select & "^NL^ 1 : 학습모드 ,  0 : 암기모드^NL^ 암기은행 모드가 동일하게 변경됩니다.", "암기은행 모드 설정")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "MBMode_Select", Input_i)
+           MBMode_Select = Input_i
+       ENDIF
+       
+  	  Case( 10 )
+  	  # Item0(문제)의 Y축 위치
+  	   Input_i = Input("Item0(문제)의 Y축 위치를 입력하세요.^NL^ 현재 설정값 : " & Item0_Yaxis & "^NL^ 암기은행 설정에서 Item0의 상단여백 ^NL^or 글자 크기가 변하여 깜빡이 기능이 ^NL^비정상적인 경우에 수정하세요. ^NL^point:화면 캡쳐 후 포토샵등에서 확인", "Item0(문제)의 Y축 위치")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Item0_Yaxis", Input_i)
+           Item0_Yaxis = Input_i
+       ENDIF
+
+  	  Case( 11 )
+  	  # Item1(정답)의 Y축 위치
+  	   Input_i = Input("Item1(정답)의 Y축 위치를 입력하세요.^NL^ 현재 설정값 : " & Item1_Yaxis & "^NL^ 암기은행 설정에서 Item1의 상단여백 ^NL^or 글자 크기가 변하여 깜빡이 기능이 ^NL^비정상적인 경우에 수정하세요. ^NL^point:화면 캡쳐 후 포토샵등에서 확인", "Item1(정답)의 Y축 위치")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Item1_Yaxis", Input_i)
+           Item1_Yaxis = Input_i
+       ENDIF
+
+  	  Case( 12 )
+  	  # Item1(정답) 표시 시간
+  	  # 깜빡이 & 학습모드시 정답 나오고 볼수 있는 시간[정답이 긴경우나 짧은 경우에 대비]
+  	   Input_i = Input("Item1(정답)을 표시할 시간을 입력하세요.^NL^ 현재 설정값 : " & Item1_Show & "ms [1초 : 1000ms]^NL^Item1(정답)을 볼 수 있는 시간 입니다. ", "정답 표시 시간")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Item1_Show", Input_i)
+           Item1_Show = Input_i
+       ENDIF
+
+  	  Case( 13 )
+  	  # 반복듣기 속도
+  	  # 숫자가 크면 늦게 반복됨 단위:ms
+  	   Input_i = Input("반복듣기속도 시간을 설정하세요.^NL^ 현재 설정값 : " & Repeat_Speed & "ms [1초 : 1000ms]^NL^ 숫자가 크면 늦게 반복됩니다.(기본: 400ms)", "반복듣기속도")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Repeat_Speed", Input_i)
+           Repeat_Speed = Input_i
+       ENDIF
+     
+  	  Case( 14 )
+  	  # n회 반복 재생 후 잠시쉬기
+  	  # 숫자가 작으면 cpu점유율 올라감 (1초 = 1000), 최소 200ms이상 추천. 단위:ms
+  	   Input_i = Input("n회 반복재생후 대기 시간을 설정하세요.^NL^ 현재 설정값 : " & Repeat_Rest & "ms [1초 : 1000ms]^NL^ 숫자가 작으면 cpu점유율이 올라갑니다. ^NL^ (최소 설정값: 200ms)", "반복재생후 대기")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Repeat_Rest", Input_i)
+           Repeat_Rest = Input_i
+       ENDIF
+       
+       
+    Case( 15 )
+  	  # 화면 가로, 세로 모드 선택
+  	  # :0(세로), 1 (가로)
+  	   Input_i = Input("화면 세로, 가로 모드를 선택하시요.^NL^ 현재 설정값 : " & Phone_Rotate & "^NL^ 1 : [가로모드] : 시계방향(270도) ^NL^  2 : [가로모드] : 반시계방향(90도) ^NL^ 0 : [세로모드]", "화면 모드 설정")
+  	   IF (Input_i ne "")
+           RegWriteDword("HKLM", "Software\MemoBank TTS", "Phone_Rotate", Input_i)
+           Phone_Rotate = Input_i
+       ENDIF
+       
+       
+       
+      Case( 16 )
+       Run(MDict_DFile)
+       Sleep(500)
+       Run(MemoBank_DFile)
+       Exit
+       
+      Case( 17 )
+       Setting_Exit = 1
+       modeIn = 1
+       
+    EndChoice
+   
+  ENDWhile
+   
+Endif
+
+
+################################################################################
+###################### 해상도에 따른 변경 사항(Auto) ###########################
+# Phone_width, Phone_high
+# 480*800 : X_axis = 10, Win_Bar = 50, X_min = 5, Y_Max = 100, MODE_X = 20
+# 240*320 : X_axis = 5,  Win_Bar = 25, X_min = 3, Y_Max = 50, MODE_X = 10
+################################################################################
+# 첫 단어까지의 거리 X축 위치
+  IF (Ceil(Phone_width*2/100) < 6)
+      X_axis = Ceil(Phone_width*2/100)+1
+      # X_axis = 6
+  ELSE
+      X_axis = Ceil(Phone_width*2/100)
+  ENDIF
+# 윈도우 상단바의 크기(Y축)
+  Win_Bar = Ceil(Phone_width/10)
+# 마우스 드래그 끝 포인터
+# X값 : X축 최소 간격(첫 단어까지의 거리 X축 위치/2 정도)
+# Y값 : Y축 최대 거리를 위한 간격 (암기은행 하단 + 알파 => Win_Bar x 2)
+  X_min = Ceil(X_axis/2)
+  Y_Max = Ceil(Win_Bar*2)
+# 암기은행 암기모드에서 커서 없애기 (X축 끝부분 간격)
+# 직접 포인터를 찍어서 확인 해볼것.(대략 X_axis * 2)
+  MODE_X = Ceil(X_axis*2)
+################################################################################
+################################################################################
+
+
+#입력기 숨기기
+HideInput
+
+# 화면 가로, 세로모드 기억 및 전환
+Angle_Org = RegRead("HKLM","System\GDI\Rotation","Angle")
+
+IF (Phone_Rotate=0)
+   Rotate( 0 )
+ElseIF(Phone_Rotate=1)
+   Rotate( 270 )
+ELSE
+   Rotate( 90 )
+ENDIF
+
+#암기은행 무조건 '사전모드 활성화' 시킴
+RegWriteDword("HKLM", "Software\MemoBank", "DictionaryView", 1)
+
+#암기상태 아이콘 출력시 깜빡이 안되는 버그로 깜빡이모드시 암기상태 아이콘 출력 비활성화
+#암기은행 카드자동진행 설정시 연습장 비활성화 시킴(충돌문제 해소)
+IF  (Blinker_Mode=1)
+    RegWriteDword("HKLM", "Software\MemoBank","StatusIcon", 0)
+    if (Card_Auto=1)
+       RegWriteDword("HKLM", "Software\MemoBank", "StrokeView", 0)
+    endif
+ENDIF
+
+#암기은행 학습모드, 암기모드 설정에 따라 변경
+IF (MBMode_Select=1) 
+   RegWriteDword("HKLM", "Software\MemoBank", "Mode", 0)
+ELSE
+   RegWriteDword("HKLM", "Software\MemoBank", "Mode", 1)
+ENDIF
+
+
+# 장치, 조명 켜기 설정
+Call("BatteryOff")
+
+#MDict 실행
+Run(MDict_DFile)
+WaitFor("MDict",8)
+Sleep(500)
+
+#암기은행 실행
+Run(MemoBank_DFile)
+WaitFor("암기은행",8)
+Show("암기은행")
+
+ClipT = ""
+
+
+While ( WndExists("MDict") AND WndExists("암기은행") AND (modeIn = 1))
+	tmp = ClipText()
+	
+	If(ClipT ne tmp)
+	  ClipT = tmp
+		#MDict에 메세지 보내기.
+		SendCommand("MDict",32883)
+		TTS_RepeatTemp = 0
+		
+
+	  #깜빡이 모드 선택시 실행
+	  #깜빡이 학습모드에서 Item0(단어 표시)는 반드시 한줄이어야 한다. 
+	  #깜빡이 암기모드에서 Item0(단어 표시)는 여러줄 가능 
+	  # "굴림" 글꼴 기준 :: Item0 글자 크기 : 28 ~ 42 , Item1 글자 크기 : 18 ~ 40
+   If (Blinker_Mode = 1)
+  
+		  While ( (TTS_RepeatTemp < TTS_Repeat) AND (ClipT eq ClipText()) AND ( WndExists("MDict") AND WndExists("암기은행")  AND WndActive("암기은행") ) )
+
+			  #----▽----정답 깜빡임코드1----▽---
+			  # 세로모드(0), 가로모드(270) 인지 확인을 위한 레지
+			  Rotation_Mode = RegRead("HKLM","System\GDI\Rotation","Angle")
+        
+        # 자동 종료등으로 인하여 가로 -> 세로로 변경시 설정 모드로 다시 변경시킴
+        IF (Phone_Rotate=0)
+           if (Not(Rotation_Mode=0))
+               Rotate( 0 )
+               Rotation_Mode=0
+           endif
+        ElseIF (Phone_Rotate=1)
+           if (Not(Rotation_Mode=270))
+              Rotate( 270 )
+              Rotation_Mode=270
+           endif
+        ELSE
+           if (Not(Rotation_Mode=90))
+              Rotate( 90 )
+              Rotation_Mode=90
+           endif
+        EndIF
+        
+    # 학습모드(1)와 암기모드 구분 IF문 시작 -------------------▽▽▽
+			IF (MBMode_Select=1) 
+			
+			  # 정답 선택
+			  ansTxt = WindowText(X_axis,Item1_Yaxis)
+		  	MouseClick("암기은행", X_axis, (Item1_Yaxis-Win_Bar))
+	  		Sleep(50)
+		  	IF (Rotation_Mode = 0)
+           MouseDown("암기은행", X_axis, (Item1_Yaxis-Win_Bar))
+           MouseUp("암기은행", (Phone_width - X_min), (Phone_high-Y_Max))
+        Else
+           MouseDown("암기은행", X_axis, (Item1_Yaxis-Win_Bar))
+           MouseUp("암기은행", (Phone_high - X_min), (Phone_width-Y_Max))
+        EndIF
+        
+			  #정답 삭제
+			  SendDelete("암기은행", 0, 0)
+			  
+			  #----▽----문제깜빡임코드----▽---
+			  # 문제 삭제
+		  	MouseClick("암기은행", X_axis, (Item0_Yaxis - Win_Bar))
+        #Shift 를 같이 누르고 그 줄의 끝으로
+		  	SendEnd("암기은행", 0, 1)
+		  	
+		  	# 문제 잘라내기
+	  		SendCtrlKey("암기은행","x")
+	  		# 깜빡이는 시간(안보이는 시간)은 디폴트로 설정
+	  		Sleep(600)
+			
+	  		# 문제 붙여넣기
+	  		SetClipText(tmp)
+	  		SendCtrlKey("암기은행","v")
+			
+	  		# 문제 영역에 커서를 없앤다
+	  		MouseClick("암기은행", X_axis, (Item1_Yaxis + Win_Bar))
+	  		#----△----문제깜빡임코드----△---
+			  
+			  
+			  #음성듣기
+        Sleep(100)
+			  SendCommand("MDict",1037)
+			  
+			  
+			  #----▽----정답 깜빡임코드2----▽---
+			  # 정답의 위치
+		  	MouseClick("암기은행", X_axis, (Item1_Yaxis-Win_Bar))
+			
+	  		# 정답 붙여넣기
+	  		SendKeys("암기은행",ansTxt)
+	  		
+	  	  # 정답 영역에 커서를 없앤다
+	  		MouseClick("암기은행", X_axis, (Item1_Yaxis + Win_Bar))
+	  		Sleep(Repeat_Speed)
+	  		Sleep(Item1_Show)
+	  		#----△----정답 깜빡임코드2----△---
+			  
+			ELSE
+			
+			#----▽----문제깜빡임코드----▽---
+			# 문제 선택		  	
+		  	MouseClick("암기은행", X_axis, (Item0_Yaxis-Win_Bar))
+	  		Sleep(50)
+		  	IF (Rotation_Mode = 0)
+           MouseDown("암기은행", X_axis, (Item0_Yaxis-Win_Bar))
+           MouseUp("암기은행", (Phone_width - X_min), (Phone_high-Y_Max))
+        Else
+           MouseDown("암기은행", X_axis, (Item0_Yaxis-Win_Bar))
+           MouseUp("암기은행", (Phone_high - X_min), (Phone_width-Y_Max))
+        EndIF
+                
+		  	#문제 잘라내기
+	  		SendCtrlKey("암기은행","x")
+	  		
+	  		# 깜빡이는 시간은 디폴트로 설정
+	  		Sleep(600)
+	  		
+			  # 문제 붙여넣기
+	  		SendKeys("암기은행",ClipText())
+	  		
+	  		# 문제 영역에 커서를 없앤다 : 없애는 최소 시간은 120ms이다.
+		  	IF (Rotation_Mode = 0)
+           MouseDown("암기은행", (Phone_width - MODE_X), (Item0_Yaxis-Win_Bar))
+           Sleep(120)
+           MouseUp("암기은행", (Phone_width - MODE_X), (Item0_Yaxis-Win_Bar))
+        Else
+           MouseDown("암기은행",(Phone_high - MODE_X), (Item0_Yaxis-Win_Bar))
+           Sleep(120)
+           MouseUp("암기은행", (Phone_high - MODE_X), (Item0_Yaxis-Win_Bar))
+        EndIF
+	  		#----△----문제깜빡임코드----△---
+			  
+			  
+			  #음성듣기
+        Sleep(100)
+			  SendCommand("MDict",1037)
+			  
+			  # 문제 잠시보여주기
+			  Sleep(Repeat_Speed-220)
+			  
+			ENDIF
+			
+    # 학습모드와 암기모드 구분 IF문 끝 -------------------△△△
+	   	
+			  TTS_RepeatTemp = TTS_RepeatTemp + 1
+			  
+		  EndWhile
+		  
+
+	     #암기은행 자동 진행 설정
+	     #자동 진행 종료 방법은 반복 횟수가 끝난 후 or 단어가 바뀐 후에 종료키 또는 'x' 를 선택한다.
+	     If (Card_Auto = 1)
+	       # 통화 상태 파악 (카드 자동 진행 모드에서 스크립트 종료시킴, 안전을 위해 종료함)
+	       # 실은 전화가 오면 WndActive("암기은행") = 0  즉, 암기은행이 비활성화 상태가 되면서 While 구문을 빠져 나오므로 무의미한 내용 같음.
+         #activeCallCount = RegValueExists("HKLM", "System\State\Phone", "Active Call Count")
+         #IF (activeCallCount = 1) 
+         #   Message( "전화 수신으로 암기은행 TTS 스크립트를 종료합니다. ", "전화 수신 알림" )
+         #   Call("BatteryOn")
+         #   Exit
+         #EndIF
+
+	       
+	       #암기은행 학습모드 & 암기모드 자동진행 설정
+	       IF (MBMode_Select=1)
+	          Sleep(100)
+            SendRight("", 0, 0)
+            #자동 진행시 종료를 위한 시간 설정
+            Sleep(Repeat_Speed-100)
+         ELSE
+            Sleep(100)
+            SendRight("", 0, 0)
+            Sleep(Repeat_Speed-100)
+            Sleep(Repeat_Speed)
+            Sleep(Item1_Show)
+            SendDown("", 0, 0)
+            #Sleep(100)
+         ENDIF
+         
+         #디버깅 메세지 창 표시
+			   #Message(MBMode_Select & ":" & MBMode_Q, "디버깅 박스" )
+
+	     Else
+	     
+	       #암기모드 부분진행 설정
+	       IF (MBMode_Select=0)
+            Sleep(Repeat_Speed)
+            SendRight("", 0, 0)
+         ENDIF
+         
+	     ENDIf
+	     
+   Else
+   
+     # 깜빡이 모드가 아니면 이하 실행
+		  While ( (TTS_RepeatTemp < TTS_Repeat) AND ( WndExists("MDict") AND WndExists("암기은행")  AND WndActive("암기은행") ) )
+			  
+			  
+			  # 세로모드(0), 가로모드(270) 인지 확인을 위한 레지
+			  Rotation_Mode = RegRead("HKLM","System\GDI\Rotation","Angle")
+        
+        # 자동 종료등으로 인하여 가로 -> 세로로 변경시 설정 모드로 다시 변경시킴
+        IF (Phone_Rotate=0)
+           if (Not(Rotation_Mode=0))
+               Rotate( 0 )
+               Rotation_Mode=0
+           endif
+        ElseIF (Phone_Rotate=1)
+           if (Not(Rotation_Mode=270))
+              Rotate( 270 )
+              Rotation_Mode=270
+           endif
+        ELSE
+           if (Not(Rotation_Mode=90))
+              Rotate( 90 )
+              Rotation_Mode=90
+           endif
+        EndIF
+			  
+			  #음성듣기
+        Sleep(Repeat_Speed)
+			  SendCommand("MDict",1037)
+
+      # 암기모드의 시간 감소를 위해 IF 조건문 사용
+      IF (MBMode_Select=1)
+			  #정답 보는 시간 설정
+	  		Sleep(Item1_Show)
+	  	ENDIF
+	  	
+			  TTS_RepeatTemp = TTS_RepeatTemp + 1
+		  EndWhile
+		  
+		  
+	     #암기은행 자동 진행 설정
+	     #자동 진행 종료 방법은 반복 횟수가 끝난 후 or 단어가 바뀐 후에 종료키 또는 'x' 를 선택한다.
+	     If (Card_Auto = 1)
+	       # 통화 상태 파악 (카드 자동 진행 모드에서 스크립트 종료시킴)
+         #activeCallCount = RegValueExists("HKLM", "System\State\Phone", "Active Call Count")
+         #IF (activeCallCount = 1) 
+         #   Message( "전화 수신으로 암기은행 TTS 스크립트를 종료합니다. ", "전화 수신 알림" )
+         #   Call("BatteryOn")
+         #   Exit
+         #EndIF
+
+	       #암기은행 학습모드 & 암기모드 자동진행 설정
+	       IF (MBMode_Select=1)
+	          Sleep(100)
+            SendRight("", 0, 0)
+            #자동 진행시 종료를 위한 시간 설정
+            Sleep(Repeat_Speed-100)
+         ELSE
+            Sleep(100)
+            SendRight("", 0, 0)
+            Sleep(Repeat_Speed-100)
+            Sleep(Repeat_Speed)
+            Sleep(Item1_Show)
+            SendDown("", 0, 0)
+            #Sleep(100)
+         ENDIF
+       
+       ELSE
+       
+	       #암기모드 부분진행 설정
+         IF (MBMode_Select=0)
+            Sleep(Repeat_Speed)
+            SendRight("", 0, 0)
+         ENDIF
+         
+	     ENDIf
+		  
+   Endif
+		  
+	EndIf
+	
+	Sleep(Repeat_Rest)
+EndWhile
+
+# 장치, 조명 끄기 설정
+Call("BatteryOn")
+
+# 화면 원래 상태로 전환
+Rotate( Angle_Org )
+
+If (modeIn =1)
+   Message( "암기은행 TTS 스크립트를 종료합니다. ", "암기은행 TTS" )
+EndIf
+
+Exit
+
+
+# 장치, 조명 끄기설정 - 토글 
+
+Sub BatteryOff
+    Battery = 0
+    BatteryTimeoutUnchecked = RegRead("HKCU", "\ControlPanel\BackLight\", "BatteryTimeoutUnchecked")
+    If ( BatteryTimeoutUnchecked = 0 )
+       BattSuspendTimeout = RegRead("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendTimeout")
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendUnchecked", BattSuspendTimeout)
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendTimeout", "0" )
+
+       BatteryTimeout = RegRead("HKCU", "\ControlPanel\BackLight\", "BatteryTimeout")
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "BatteryTimeoutUnchecked", BatteryTimeout)
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "BatteryTimeout", "0" )
+
+       ACSuspendTimeout = RegRead("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendTimeout")
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendUnchecked", ACSuspendTimeout)
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendTimeout", "0" )
+
+       ACTimeout = RegRead("HKCU", "\ControlPanel\BackLight\", "ACTimeout")
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "ACTimeoutUnchecked", ACTimeout)
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "ACTimeout", "0" )
+
+       Battery = 1
+    EndIf
+EndSub
+
+
+Sub BatteryOn
+    If ( Battery = 1 )
+       BattSuspendUnchecked = RegRead("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendUnchecked")
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendTimeout", BattSuspendUnchecked)
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "BattSuspendUnchecked", "0" )
+
+       BatteryTimeoutUnchecked = RegRead("HKCU", "\ControlPanel\BackLight\", "BatteryTimeoutUnchecked")
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "BatteryTimeout", BatteryTimeoutUnchecked)
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "BatteryTimeoutUnchecked", "0" )
+
+       ACSuspendUnchecked = RegRead("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendUnchecked")
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendTimeout", ACSuspendUnchecked)
+       RegWriteDWord("HKLM", "\System\CurrentControlSet\Control\Power\Timeouts\", "ACSuspendUnchecked", "0" )
+
+       ACTimeoutUnchecked = RegRead("HKCU", "\ControlPanel\BackLight\", "ACTimeoutUnchecked")
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "ACTimeout", ACTimeoutUnchecked)
+       RegWriteDWord("HKCU", "\ControlPanel\BackLight\", "ACTimeoutUnchecked", "0" )
+    EndIf
+EndSub
